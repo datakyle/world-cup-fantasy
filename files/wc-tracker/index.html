@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
-<title>Fantasy Tracker — World Cup 2026</title>
+<title>WC 2026 Fantasy</title>
 <style>
   :root{
     --pitch:#0c3d2c;--pitch2:#11543c;--green:#12a05c;--green-d:#0c7f47;
@@ -14,17 +14,20 @@
   body{background:#d8ddd6;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);display:flex;justify-content:center}
   #phone{width:100%;max-width:460px;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.18)}
   @media(min-width:500px){body{padding:22px 0}#phone{min-height:calc(100vh - 44px);border-radius:30px;overflow:hidden}}
-  header{background:linear-gradient(160deg,var(--pitch),var(--pitch2));color:#fff;padding:16px 16px 14px;position:sticky;top:0;z-index:20}
-  .htop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
-  .brand b{font-size:18px;letter-spacing:-.01em}
-  .brand span{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9fd3ba;margin-top:3px}
-  .sync{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:20px;margin-top:10px}
+  header{background:linear-gradient(160deg,var(--pitch),var(--pitch2));color:#fff;padding:18px 16px 16px;position:sticky;top:0;z-index:20;text-align:center}
+  .brand{display:flex;flex-direction:column;align-items:center;gap:7px}
+  .brand .kicker{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:#9fd3ba;font-weight:700}
+  .brand b{font-size:22px;font-weight:800;letter-spacing:-.015em;line-height:1}
+  .sync{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:20px;margin-top:1px}
   .sync .dot{width:6px;height:6px;border-radius:50%}
   .sync.ok{background:rgba(57,217,138,.18);color:#bff0d4}.sync.ok .dot{background:#39d98a}
   .sync.stale{background:rgba(243,167,18,.2);color:#ffe0a3}.sync.stale .dot{background:#f3a712}
   .sync.err{background:rgba(255,90,70,.2);color:#ffc9bf}.sync.err .dot{background:#ff5a46}
-  .refresh{border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.13);color:#fff;font-size:13px;font-weight:700;padding:8px 13px;border-radius:20px;cursor:pointer;white-space:nowrap}
-  .refresh:active{transform:scale(.97)}.refresh:disabled{opacity:.5}
+  .sync.live{background:rgba(224,57,43,.22);color:#ffc9bf}.sync.live .dot{background:#ff5a46;animation:p 1.3s ease-out infinite}
+  .refresh{position:absolute;top:14px;right:14px;width:34px;height:34px;display:inline-flex;align-items:center;justify-content:center;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.13);color:#fff;font-size:16px;line-height:1;border-radius:50%;cursor:pointer;padding:0}
+  .refresh:active{transform:scale(.94)}.refresh:disabled{opacity:.5}
+  .refresh.spin{animation:spin .9s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
   /* tabs */
   .tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
   .tabs button{flex:1;border:0;background:none;padding:13px 4px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;position:relative}
@@ -137,11 +140,11 @@
 <body>
 <div id="phone">
   <header>
-    <div class="htop">
-      <div class="brand"><b>Fantasy Tracker</b><span>World Cup 2026</span>
-        <span id="sync" class="sync stale"><i class="dot"></i>Loading…</span>
-      </div>
-      <button id="refresh" class="refresh">↻ Refresh</button>
+    <button id="refresh" class="refresh" aria-label="Refresh now" title="Refresh now">↻</button>
+    <div class="brand">
+      <span class="kicker">FIFA World Cup 2026</span>
+      <b>WC 2026 Fantasy</b>
+      <span id="sync" class="sync stale"><i class="dot"></i>Loading…</span>
     </div>
   </header>
   <div class="tabs" id="tabs">
@@ -368,19 +371,63 @@ async function loadTracker(){
     const s=app.data.sync;
     if(!app.data.seeded){ setSync("stale","Not seeded"); }
     else if(s&&s.ok===false){ setSync("err","Feed error"); }
+    else if(activity()==="active"){ setSync("live","Live · auto-updating"); }
     else if(s&&s.lastSync){ const fresh=Date.now()-Date.parse(s.lastSync)<20*60*1000; setSync(fresh?"ok":"stale","Synced "+fmtAgo(s.lastSync)); }
     else setSync("stale","Never synced");
   }catch(e){ setSync("err","Offline"); }
 }
-async function doRefresh(){
-  const btn=$("#refresh"); btn.disabled=true; setSync("stale","Syncing…");
+// How active the tournament is *right now*, derived from scheduled kickoffs (not
+// the live flags, which can be stale between syncs). A match's active window runs
+// from 5 min before kickoff to 2.5 h after — the only time results actually move.
+function activity(){
+  const ms=(app.data&&app.data.matches)||[], now=Date.now();
+  let soon=false;
+  for(const m of ms){
+    const t=Date.parse(m.utc); if(isNaN(t)) continue;
+    if(now>=t-5*60*1000 && now<=t+150*60*1000) return "active";
+    if(t>now && t-now<60*60*1000) soon=true;   // kickoff within the hour
+  }
+  return soon?"soon":"idle";
+}
+// Poll cadence: hammer only while matches are live; otherwise cheap reads.
+const POLL_MS={active:90*1000, soon:120*1000, idle:600*1000};
+
+let busy=false;
+async function autoSync(){
+  // Trigger a real pull from football-data. Safe to call often — the server
+  // soft-throttles to one external call per 30s and honors rate-limit cooldowns.
+  if(busy) return; busy=true;
+  const btn=$("#refresh"); btn.classList.add("spin");
   try{ await fetch("/api/sync",{cache:"no-store"}); }catch(e){}
   await loadTracker();
-  btn.disabled=false;
+  btn.classList.remove("spin"); busy=false;
+}
+async function doRefresh(){            // manual button — always forces a sync
+  if(busy) return; busy=true;
+  const btn=$("#refresh"); btn.disabled=true; btn.classList.add("spin"); setSync("stale","Syncing…");
+  try{ await fetch("/api/sync?force=1",{cache:"no-store"}); }catch(e){}
+  await loadTracker();
+  btn.classList.remove("spin"); btn.disabled=false; busy=false;
 }
 $("#refresh").onclick=doRefresh;
-loadTracker();
-setInterval(loadTracker, 60000);
+
+// Adaptive heartbeat: one self-rescheduling timer. Auto-syncs while live, does a
+// cheap cached read otherwise, and goes completely silent when the tab is hidden.
+let pollTimer=null;
+function schedulePoll(){
+  clearTimeout(pollTimer);
+  if(document.hidden) return;                 // paused in background — saves API + battery
+  pollTimer=setTimeout(tick, POLL_MS[activity()]);
+}
+async function tick(){
+  if(document.hidden){ return; }
+  if(activity()==="active") await autoSync(); // real pull during live matches
+  else await loadTracker();                   // cheap cached read otherwise
+  schedulePoll();
+}
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) tick(); });
+
+(async()=>{ await loadTracker(); if(activity()==="active") await autoSync(); schedulePoll(); })();
 </script>
 </body>
 </html>
