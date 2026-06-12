@@ -14,26 +14,50 @@ based on how those teams do in the real tournament.
 
 ```
 README.md                 you are here
+.gitignore                ignores .DS_Store, .vercel, node_modules, *.zip, secrets
+.claude/launch.json       local static-preview config for the tracker (dev only)
 docs/
   DRAFT.md                draft system: hosting, API, data model, how to read rosters
-  TRACKER_SPEC.md         full build spec for the tracker (scoring, data source, plan)
+  TRACKER_SPEC.md         original build spec for the tracker (design record + post-launch notes)
 data/
   draft-final.json        frozen rosters — the tracker's input (re-freeze when draft ends)
 tools/
   snapshot_draft.py       re-freeze data/draft-final.json from the live draft
 files/
-  wc-draft-vercel/        deployed draft room source (live — don't redeploy casually)
+  wc-draft-vercel/        deployed draft room source (live — Vercel root dir for wc-draft-room)
   wc-tracker/             deployed tracker source (live — has its own README)
+  index.html, draft.js,   legacy flat copies of the draft room + a zip — superseded by
+  README.md, *.zip        wc-draft-vercel/; kept for history, not deployed
 draftping.py              (unused) on-the-clock iMessage notifier — not scheduled
 ```
 
+## Hosting & deploys
+
+This repo lives on GitHub at **https://github.com/datakyle/world-cup-fantasy** (private)
+and is a **monorepo** backing two Vercel projects in the `datakyles-projects` team:
+
+| Vercel project | Root directory | Production URL |
+|----------------|----------------|----------------|
+| `wc-tracker` | `files/wc-tracker` | https://wc-fantasy-2026.vercel.app |
+| `wc-draft-room` | `files/wc-draft-vercel` | https://wc-draft-room.vercel.app |
+
+- **Deploys are git-driven:** push to `main` → both projects build from their own
+  root directory; any branch/PR gets a preview deploy. No more `vercel` CLI deploys —
+  the repo is the source of truth.
+- Secrets (Upstash + football-data tokens) live only in each project's Vercel env vars,
+  never in the repo.
+- A push touching only shared files (`docs/`, `data/`) still rebuilds both projects
+  (harmless). Add a per-project "Ignored Build Step" path filter if that ever matters.
+
 ## Operating the live apps
 
-Both apps are built and live — free Vercel Hobby projects sharing the `internallog`
-Upstash Redis (separate keys, zero collision).
+Both apps are live — free Vercel Hobby projects sharing the `internallog` Upstash Redis
+(separate keys, zero collision).
 
 - **Tracker** → https://wc-fantasy-2026.vercel.app — seed/sync/rate-limit ops in
   [`files/wc-tracker/README.md`](files/wc-tracker/README.md). Tabs: Schedule · Table · Leaderboard.
+  Auto-refreshes itself during live matches (no manual refresh needed); match cards show a
+  live scoreboard line and the Leaderboard ends with a "How scoring works" key.
 - **Draft room** → https://wc-draft-room.vercel.app — see [`docs/DRAFT.md`](docs/DRAFT.md).
 - **Re-freeze rosters** (only if the league re-drafts): `python3 tools/snapshot_draft.py`.
 

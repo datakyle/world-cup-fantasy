@@ -5,9 +5,14 @@ draft's Upstash store.
 
 - **Live:** https://wc-fantasy-2026.vercel.app
 - **Vercel project:** `wc-tracker` (team `datakyles-projects`, free Hobby)
+- **Source & deploys:** monorepo [datakyle/world-cup-fantasy](https://github.com/datakyle/world-cup-fantasy),
+  Vercel **root directory `files/wc-tracker`**. Push to `main` → auto-deploys; branches get previews.
 - **Storage:** `internallog` Upstash Redis, key **`wc-tracker-v1`** (separate from the
   draft's `wc-draft-v1` and the scorecard's `scorecard:data`)
-- **Results feed:** football-data.org free tier, competition `WC` (104 matches)
+- **Results feed:** football-data.org free tier, competition `WC` (104 matches). The free
+  tier marks live status (`IN_PLAY`/`PAUSED`) but **scores are delayed a few minutes** —
+  real-time livescores need their paid tier; the code is plan-agnostic, so an upgrade needs
+  no changes.
 
 ## Files
 
@@ -30,14 +35,18 @@ vercel.json       cleanUrls + daily cron → /api/sync
 
 ## Tabs (`index.html`)
 
-Tab order (left→right) is **Schedule · Table · Leaderboard**; the app opens on Schedule.
+Header reads **WC 2026 Fantasy** (centered, with a "FIFA World Cup 2026" kicker, a status
+pill, and a circular ↻ refresh button). Tab order (left→right) is **Schedule · Table ·
+Leaderboard**; the app opens on Schedule.
 
 - **Schedule** (default) — full 104-match schedule grouped by local day. Opening the tab
   auto-scrolls to **today** (marked with a green "Today" pill) and stays put across the
-  60s background refresh. Each match shows kickoff time, both teams with the **roster
-  owner** of each, a live/full-time badge, and the score once the API has it (live while
-  `IN_PLAY`/`PAUSED`, final on `FINISHED`). The **winning team's row gets a subtle green
-  tint + bold name**. Knockout fixtures with undetermined teams show "TBD / Unowned".
+  background refresh. Each match shows kickoff time, both teams with the **roster owner**
+  of each, and a live/full-time badge. Live and finished games show a **prominent
+  scoreboard line** (flags flanking a big score); live cards get a red accent border, a
+  red score, and a pulsing **LIVE** badge. The **winning team's row gets a subtle green
+  tint + bold name**. Upcoming matches show no score. Knockout fixtures with undetermined
+  teams show "TBD / Unowned".
 - **Table** — all 12 group tables (flag, team, fantasy owner, live W-D-L record,
   points; top 2 highlighted), followed by the **knockout bracket** — each round
   (R32 → Final + 3rd place) shows its matchups with owners, live/full-time scores and
@@ -45,6 +54,24 @@ Tab order (left→right) is **Schedule · Table · Leaderboard**; the app opens 
   are computed server-side (`buildGroups`); the bracket is built client-side from the
   knockout matches in the feed.
 - **Leaderboard** — players ranked by total; tap a row to expand the per-team breakdown.
+  Ends with a **"How scoring works" card** built from the live `config` (group W/D/L +
+  flat knockout bonuses + team/player total rules), shown even before standings exist.
+
+## Auto-refresh (client-side, API-friendly)
+
+The page refreshes itself — no need to tap ↻. One adaptive timer sets its own cadence from
+the **scheduled kickoff times** (so it works even on stale data) and **pauses entirely when
+the tab is hidden**:
+
+| State (from kickoff times) | Cadence | Calls |
+|----------------------------|---------|-------|
+| A match in its live window (−5 min to +2.5 h) | every **90s** | real `/api/sync` pull |
+| A match within the next hour | every **2 min** | cheap cached `/api/tracker` read |
+| Idle (nothing playing) | every **10 min** | cheap cached read (daily cron handles bulk) |
+
+Auto-sync is safe because `/api/sync` self-throttles server-side (see Rate limits below).
+The status pill shows **"Live · auto-updating"** during matches; the ↻ button spins while
+syncing and still forces an immediate `?force=1` sync on tap.
 
 ## Scoring (in `api/_lib.js` → `DEFAULT_CONFIG`)
 
@@ -60,7 +87,8 @@ curl -X POST "https://wc-fantasy-2026.vercel.app/api/seed?token=$SEED_TOKEN"
 ```
 Pulls the live draft, freezes players + rosters. Safe to re-run.
 
-**Force a sync** (normally the Refresh button or daily cron handles it):
+**Force a sync** (normally the client auto-refresh, the ↻ button, or the daily cron
+handles it — see Auto-refresh above):
 ```bash
 curl "https://wc-fantasy-2026.vercel.app/api/sync?force=1"
 ```

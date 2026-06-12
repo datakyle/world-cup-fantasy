@@ -5,6 +5,15 @@
 > specified; all open questions from §9 are now resolved (see that section). The
 > running source is in `files/wc-tracker/`; the operational runbook is
 > [`files/wc-tracker/README.md`](../files/wc-tracker/README.md).
+>
+> **Post-launch additions (not in the original spec):**
+> - Now hosted on GitHub as a monorepo, [datakyle/world-cup-fantasy](https://github.com/datakyle/world-cup-fantasy);
+>   Vercel deploys from git (root dir `files/wc-tracker`), replacing CLI deploys.
+> - **Client auto-refresh** — adaptive polling that auto-syncs only during live match
+>   windows and pauses when the tab is hidden (realizes §8.4's "teams still alive / live
+>   ticker" intent and supersedes the manual-only Refresh in §8.3). See the runbook.
+> - **Live scoreboard line** on Schedule match cards; **centered "WC 2026 Fantasy" header**.
+> - **"How scoring works" key** on the Leaderboard, rendered from the live `config`.
 
 Originally a build spec to make the work mechanical. Decisions locked at design time
 are marked ✅.

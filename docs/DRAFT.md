@@ -17,6 +17,7 @@ lives, and exactly how to read the final rosters out of it.
 | Piece | Value |
 |-------|-------|
 | Vercel project | `wc-draft-room` (team `datakyles-projects`, free Hobby plan) |
+| Source & deploys | monorepo [datakyle/world-cup-fantasy](https://github.com/datakyle/world-cup-fantasy), Vercel **root directory `files/wc-draft-vercel`**; push to `main` auto-deploys |
 | Storage | Upstash Redis store **`internallog`** (shared, free tier) |
 | Redis key | `wc-draft-v1` (one JSON blob) |
 | Env vars on Vercel | `KV_REST_API_URL`, `KV_REST_API_TOKEN` (injected by the Upstash connection; `api/draft.js` also accepts `UPSTASH_REDIS_REST_*`) |

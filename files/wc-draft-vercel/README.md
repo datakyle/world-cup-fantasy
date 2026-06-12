@@ -2,6 +2,11 @@
 
 A mobile-first async snake-draft board for the World Cup 2026 fantasy league. Picks sync across everyone's phones through a tiny serverless API backed by Upstash Redis.
 
+> **Already deployed.** This folder is the live `wc-draft-room` Vercel project (root
+> directory `files/wc-draft-vercel` in the [datakyle/world-cup-fantasy](https://github.com/datakyle/world-cup-fantasy)
+> monorepo) — pushing to `main` auto-deploys it. The step-by-step below is kept as a
+> from-scratch reference; for day-to-day operation see [`docs/DRAFT.md`](../../docs/DRAFT.md).
+
 ```
 wc-draft-vercel/
   index.html      the whole draft room (UI + logic)
