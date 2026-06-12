@@ -1,0 +1,9 @@
+{
+  "name": "wc-tracker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "World Cup 2026 fantasy tracker — scores drafted rosters against real results",
+  "engines": {
+    "node": ">=18"
+  }
+}

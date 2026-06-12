@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+<title>Draft Room — World Cup 2026</title>
+<style>
+  :root{
+    --pitch:#0c3d2c;
+    --pitch2:#11543c;
+    --green:#12a05c;
+    --green-d:#0c7f47;
+    --amber:#f3a712;
+    --amber-bg:#fff5e0;
+    --amber-tx:#7a5200;
+    --bg:#eef1ed;
+    --card:#ffffff;
+    --line:#e4e8e2;
+    --ink:#13231b;
+    --muted:#6c766f;
+    --taken-bg:#f1f2ef;
+    --taken-tx:#a3aaa3;
+  }
+  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    background:#d8ddd6;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    color:var(--ink);
+    display:flex;justify-content:center;
+    padding:0;
+  }
+  /* phone frame on wide screens, full-bleed on real phones */
+  #phone{
+    width:100%;max-width:430px;background:var(--bg);min-height:100vh;
+    position:relative;display:flex;flex-direction:column;
+    box-shadow:0 0 40px rgba(0,0,0,.18);
+  }
+  @media(min-width:480px){
+    body{padding:22px 0}
+    #phone{min-height:calc(100vh - 44px);border-radius:30px;overflow:hidden}
+  }
+
+  /* header */
+  header{
+    background:linear-gradient(160deg,var(--pitch),var(--pitch2));
+    color:#fff;padding:16px 16px 14px;position:sticky;top:0;z-index:20;
+  }
+  .htop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .brand{display:flex;flex-direction:column;line-height:1.1}
+  .brand b{font-size:18px;letter-spacing:-.01em}
+  .brand span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9fd3ba;margin-top:3px;display:flex;align-items:center}
+  .sync{display:inline-flex;align-items:center;gap:5px;font-size:9.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:20px;margin-left:8px}
+  .sync .dot{width:6px;height:6px;border-radius:50%;flex:none}
+  .sync.synced{background:rgba(57,217,138,.18);color:#bff0d4}
+  .sync.synced .dot{background:#39d98a}
+  .sync.offline{background:rgba(243,167,18,.2);color:#ffe0a3}
+  .sync.offline .dot{background:#f3a712}
+  .sync.checking{background:rgba(255,255,255,.13);color:#cfe7da}
+  .sync.checking .dot{background:#9fd3ba;animation:p 1.4s ease-out infinite}
+  .me-chip{
+    background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.2);
+    color:#fff;font-size:12.5px;font-weight:600;padding:7px 11px;border-radius:20px;cursor:pointer;white-space:nowrap;
+  }
+  .me-chip b{color:#d7f3e3}
+
+  /* on the clock */
+  .clock{
+    margin-top:13px;background:var(--amber-bg);color:var(--amber-tx);
+    border-radius:12px;padding:11px 13px;display:flex;align-items:center;gap:11px;
+  }
+  .clock.done{background:rgba(255,255,255,.14);color:#eafff4}
+  .pulse{width:9px;height:9px;border-radius:50%;background:var(--amber);position:relative;flex:none}
+  .pulse::after{content:"";position:absolute;inset:-5px;border-radius:50%;border:2px solid var(--amber);opacity:.5;animation:p 1.6s ease-out infinite}
+  @keyframes p{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.7);opacity:0}}
+  .clock .who{font-weight:800;font-size:15px}
+  .clock .lbl{font-size:11.5px;opacity:.85;text-transform:uppercase;letter-spacing:.07em}
+  .clock .turn-tag{margin-left:auto;font-size:11px;font-weight:800;background:var(--amber);color:#3a2700;padding:4px 9px;border-radius:20px}
+
+  /* tabs */
+  .tabs{display:flex;background:var(--card);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:10}
+  .tabs button{
+    flex:1;border:0;background:none;padding:13px 4px;font-size:13.5px;font-weight:600;color:var(--muted);
+    cursor:pointer;position:relative;
+  }
+  .tabs button.on{color:var(--ink)}
+  .tabs button.on::after{content:"";position:absolute;left:18%;right:18%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--green)}
+  .tabs .pill{display:inline-block;min-width:18px;font-size:11px;background:#e7efe9;color:var(--green-d);border-radius:10px;padding:0 6px;margin-left:5px;font-weight:800}
+
+  main{flex:1;overflow-y:auto;padding:14px 14px 30px}
+
+  /* search */
+  .search{position:relative;margin-bottom:12px}
+  .search input{
+    width:100%;border:1px solid var(--line);background:#fff;border-radius:12px;
+    padding:12px 14px 12px 38px;font-size:15px;color:var(--ink);outline:none;
+  }
+  .search input:focus{border-color:var(--green)}
+  .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);opacity:.4}
+
+  .grp{margin-bottom:16px}
+  .grp h3{
+    font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);
+    margin:0 2px 8px;font-weight:800;
+  }
+  .team{
+    width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:13px;
+    padding:12px 13px;margin-bottom:8px;display:flex;align-items:center;gap:12px;cursor:pointer;
+    transition:transform .06s ease, border-color .12s ease;
+  }
+  .team:active{transform:scale(.985)}
+  .team .flag{font-size:24px;width:30px;text-align:center;flex:none}
+  .team .nm{font-weight:650;font-size:15.5px;flex:1;line-height:1.15}
+  .team .nm small{display:block;font-weight:500;color:var(--muted);font-size:11.5px;margin-top:2px;letter-spacing:.04em}
+  .team .code{font-size:11px;font-weight:800;color:var(--muted);background:#f0f2ef;border-radius:7px;padding:4px 7px;flex:none}
+  .team.pick-on{border-color:#bfe6cf}
+  .team.pick-on .code{color:#fff;background:var(--green)}
+  .team.taken{background:var(--taken-bg);border-color:transparent;cursor:default}
+  .team.taken .flag{filter:grayscale(1);opacity:.55}
+  .team.taken .nm{color:var(--taken-tx);text-decoration:line-through}
+  .team.taken .by{margin-left:auto;text-align:right;flex:none;text-decoration:none}
+  .team.taken .by b{display:block;font-size:12.5px;color:#4f5b53;font-weight:700}
+  .team.taken .by span{font-size:10.5px;color:var(--taken-tx)}
+
+  .hint{font-size:12.5px;color:var(--muted);text-align:center;padding:6px 10px 0}
+
+  /* order tab */
+  .round{margin-bottom:16px}
+  .round .rh{display:flex;align-items:center;gap:8px;margin:0 2px 8px}
+  .round .rh b{font-size:13px}
+  .round .rh i{font-style:normal;font-size:11px;color:var(--muted)}
+  .slot{
+    display:flex;align-items:center;gap:11px;background:var(--card);border:1px solid var(--line);
+    border-radius:11px;padding:10px 12px;margin-bottom:6px;
+  }
+  .slot .pn{font-size:12px;font-weight:800;color:var(--muted);width:34px;flex:none}
+  .slot .pl{font-weight:600;font-size:14px;flex:1}
+  .slot .tm{font-size:13.5px;color:var(--ink);font-weight:600;display:flex;align-items:center;gap:6px}
+  .slot .tm .f{font-size:17px}
+  .slot.empty .tm{color:#c2c9c2}
+  .slot.live{border-color:var(--amber);background:var(--amber-bg)}
+  .slot.live .pl{color:var(--amber-tx)}
+  .slot.mine{border-color:#bfe6cf}
+
+  /* rosters */
+  .rost{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:11px}
+  .rost .rt{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+  .rost .rt b{font-size:15.5px}
+  .rost .rt .ct{font-size:12px;color:var(--muted);font-weight:700}
+  .rost.youbox{border-color:var(--green);box-shadow:0 0 0 3px #e7f4ec}
+  .rost .youtag{font-size:10px;font-weight:800;color:#fff;background:var(--green);padding:2px 7px;border-radius:20px;margin-left:7px;text-transform:uppercase;letter-spacing:.05em}
+  .chips{display:flex;flex-wrap:wrap;gap:7px}
+  .chip{background:#f3f5f2;border:1px solid var(--line);border-radius:9px;padding:6px 9px;font-size:13px;font-weight:600;display:flex;align-items:center;gap:6px}
+  .chip .f{font-size:16px}
+  .rost .none{font-size:12.5px;color:var(--muted);font-style:italic}
+
+  /* setup + empty */
+  .pad{padding:22px 18px}
+  .pad h2{font-size:21px;letter-spacing:-.01em;margin-bottom:6px}
+  .pad p.sub{color:var(--muted);font-size:14px;line-height:1.45;margin-bottom:20px}
+  .field{margin-bottom:18px}
+  .field label{display:block;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px}
+  .addrow{display:flex;gap:8px}
+  .addrow input{flex:1;border:1px solid var(--line);border-radius:11px;padding:12px 13px;font-size:15px;outline:none}
+  .addrow input:focus{border-color:var(--green)}
+  .addrow button{border:0;background:var(--ink);color:#fff;border-radius:11px;padding:0 16px;font-weight:700;font-size:14px;cursor:pointer}
+  .plist{margin-top:10px;display:flex;flex-direction:column;gap:7px}
+  .prow{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 12px}
+  .prow .n{width:22px;height:22px;border-radius:50%;background:#e7efe9;color:var(--green-d);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center;flex:none}
+  .prow .nm{flex:1;font-weight:600;font-size:15px}
+  .prow .x{border:0;background:none;color:#c25b4a;font-size:20px;cursor:pointer;padding:0 4px}
+  .seg{display:flex;gap:8px}
+  .seg button{flex:1;border:1px solid var(--line);background:#fff;border-radius:11px;padding:12px 0;font-size:15px;font-weight:700;color:var(--muted);cursor:pointer}
+  .seg button.on{border-color:var(--green);background:#e7f4ec;color:var(--green-d)}
+  .cap{font-size:12px;color:var(--muted);margin-top:8px;text-align:center}
+  .cap.warn{color:#c25b4a;font-weight:600}
+  .cta{
+    width:100%;border:0;background:var(--green);color:#fff;font-size:16px;font-weight:800;
+    border-radius:13px;padding:15px;margin-top:8px;cursor:pointer;
+  }
+  .cta:disabled{background:#b9c6bd;cursor:not-allowed}
+  .ghost{width:100%;border:1px solid var(--line);background:#fff;color:var(--muted);font-size:13px;font-weight:600;border-radius:11px;padding:11px;margin-top:10px;cursor:pointer}
+
+  /* modal */
+  .scrim{position:fixed;inset:0;background:rgba(10,20,15,.45);display:flex;align-items:flex-end;justify-content:center;z-index:50}
+  @media(min-width:480px){.scrim{align-items:center}}
+  .sheet{background:#fff;width:100%;max-width:430px;border-radius:20px 20px 0 0;padding:18px 18px 26px}
+  @media(min-width:480px){.sheet{border-radius:18px;margin:0 14px}}
+  .sheet h4{font-size:17px;margin-bottom:4px}
+  .sheet p{font-size:13px;color:var(--muted);margin-bottom:14px}
+  .opt{width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:12px;padding:13px 14px;margin-bottom:8px;font-size:15px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:10px}
+  .opt.on{border-color:var(--green);background:#e7f4ec}
+  .opt .n{width:22px;height:22px;border-radius:50%;background:#eef1ee;color:var(--muted);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .opt.on .n{background:var(--green);color:#fff}
+  .toggle{display:flex;align-items:center;gap:10px;padding:12px 2px;margin-top:4px}
+  .toggle .tx{flex:1;font-size:13.5px;color:var(--ink)}
+  .toggle .tx small{display:block;color:var(--muted);font-size:11.5px;margin-top:2px}
+  .sw{width:46px;height:27px;border-radius:20px;background:#d5dbd5;position:relative;flex:none;cursor:pointer;transition:background .15s}
+  .sw.on{background:var(--green)}
+  .sw::after{content:"";position:absolute;top:3px;left:3px;width:21px;height:21px;border-radius:50%;background:#fff;transition:left .15s}
+  .sw.on::after{left:22px}
+  .sheet .close{width:100%;border:0;background:var(--ink);color:#fff;border-radius:12px;padding:13px;font-weight:700;font-size:15px;margin-top:6px;cursor:pointer}
+
+  /* commissioner controls */
+  .cbar{display:flex;align-items:center;gap:10px;background:#13231b;border-radius:12px;padding:9px 11px 9px 13px;margin-bottom:11px}
+  .cbadge{font-size:10px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fd3ba}
+  .cundo{margin-left:auto;border:1px solid #2f4a3c;background:#1c3326;color:#eafff4;font-size:13px;font-weight:700;border-radius:9px;padding:8px 12px;cursor:pointer}
+  .cundo:disabled{opacity:.4;cursor:not-allowed}
+  .team.taken.mng{cursor:pointer}
+  .team.taken .edit{margin-left:10px;flex:none;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:#fff;background:#12a05c;border-radius:7px;padding:4px 8px;text-decoration:none}
+  .mlabel{font-size:11px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:6px 2px 8px}
+  .swaplist{max-height:230px;overflow-y:auto;display:flex;flex-direction:column;gap:6px;margin-bottom:14px;-webkit-overflow-scrolling:touch}
+  .swapop{display:flex;align-items:center;gap:10px;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:11px;padding:11px 12px;font-size:14.5px;font-weight:600;cursor:pointer}
+  .swapop .f{font-size:18px}
+  .swapop .gt{margin-left:auto;font-size:10.5px;font-weight:800;color:var(--muted);background:#f0f2ef;border-radius:6px;padding:3px 7px}
+  .danger{width:100%;border:1px solid #e7c4ba;background:#fbeee9;color:#b4441f;font-size:14px;font-weight:700;border-radius:12px;padding:13px;margin-bottom:8px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="phone"><div id="app"></div></div>
+<div id="modal"></div>
+
+<script>
+/* ---------------- data: the real 48-team 2026 field ---------------- */
+const TEAMS = [
+  ["MEX","Mexico","A","🇲🇽"],["RSA","South Africa","A","🇿🇦"],["KOR","Korea Republic","A","🇰🇷"],["CZE","Czechia","A","🇨🇿"],
+  ["CAN","Canada","B","🇨🇦"],["BIH","Bosnia & Herzegovina","B","🇧🇦"],["QAT","Qatar","B","🇶🇦"],["SUI","Switzerland","B","🇨🇭"],
+  ["BRA","Brazil","C","🇧🇷"],["MAR","Morocco","C","🇲🇦"],["HAI","Haiti","C","🇭🇹"],["SCO","Scotland","C","🏴󠁧󠁢󠁳󠁣󠁴󠁿"],
+  ["USA","United States","D","🇺🇸"],["PAR","Paraguay","D","🇵🇾"],["AUS","Australia","D","🇦🇺"],["TUR","Türkiye","D","🇹🇷"],
+  ["GER","Germany","E","🇩🇪"],["CUW","Curaçao","E","🇨🇼"],["CIV","Ivory Coast","E","🇨🇮"],["ECU","Ecuador","E","🇪🇨"],
+  ["NED","Netherlands","F","🇳🇱"],["JPN","Japan","F","🇯🇵"],["SWE","Sweden","F","🇸🇪"],["TUN","Tunisia","F","🇹🇳"],
+  ["BEL","Belgium","G","🇧🇪"],["EGY","Egypt","G","🇪🇬"],["IRN","Iran","G","🇮🇷"],["NZL","New Zealand","G","🇳🇿"],
+  ["ESP","Spain","H","🇪🇸"],["CPV","Cape Verde","H","🇨🇻"],["KSA","Saudi Arabia","H","🇸🇦"],["URU","Uruguay","H","🇺🇾"],
+  ["FRA","France","I","🇫🇷"],["SEN","Senegal","I","🇸🇳"],["IRQ","Iraq","I","🇮🇶"],["NOR","Norway","I","🇳🇴"],
+  ["ARG","Argentina","J","🇦🇷"],["ALG","Algeria","J","🇩🇿"],["AUT","Austria","J","🇦🇹"],["JOR","Jordan","J","🇯🇴"],
+  ["POR","Portugal","K","🇵🇹"],["COD","DR Congo","K","🇨🇩"],["UZB","Uzbekistan","K","🇺🇿"],["COL","Colombia","K","🇨🇴"],
+  ["ENG","England","L","🏴󠁧󠁢󠁥󠁮󠁧󠁿"],["CRO","Croatia","L","🇭🇷"],["GHA","Ghana","L","🇬🇭"],["PAN","Panama","L","🇵🇦"],
+].map(t=>({code:t[0],name:t[1],group:t[2],flag:t[3]}));
+const TEAM=Object.fromEntries(TEAMS.map(t=>[t.code,t]));
+const GROUPS=[...new Set(TEAMS.map(t=>t.group))];
+
+/* ---------------- storage: real backend via /api/draft (shared) + localStorage (this device) ---------------- */
+const API="/api/draft";
+async function loadState(){
+  try{
+    const r=await fetch(API,{cache:"no-store"});
+    if(!r.ok) throw new Error("http "+r.status);
+    const d=await r.json();
+    setSync("synced");
+    return d.state||null;
+  }catch(e){ setSync("offline"); return null; }
+}
+function loadMe(){ try{ const v=localStorage.getItem("wc-me-v1"); return v?JSON.parse(v):{me:null,commish:false}; }catch(e){ return {me:null,commish:false}; } }
+function persist(s){
+  s.rev=(s.rev||0)+1;
+  fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({state:s})})
+    .then(r=>setSync(r.ok?"synced":"offline")).catch(()=>setSync("offline"));
+}
+function persistMe(o){ try{ localStorage.setItem("wc-me-v1",JSON.stringify(o)); }catch(e){} }
+function wipe(){ fetch(API,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({reset:true})}).then(r=>setSync(r.ok?"synced":"offline")).catch(()=>setSync("offline")); }
+function probeSync(){ loadState(); /* sets the sync chip as a side effect */ }
+
+/* ---------------- app state ---------------- */
+const app={ state:null, me:{me:null,commish:false}, tab:"draft", filter:"", sync:"checking", setup:{names:[],picks:9} };
+
+function syncChip(){
+  const map={synced:["synced","Synced"],offline:["offline","Offline"],checking:["checking","Connecting…"]};
+  const [cls,lbl]=map[app.sync]||map.checking;
+  return `<span id="syncDot" class="sync ${cls}"><i class="dot"></i>${lbl}</span>`;
+}
+function setSync(v){ if(app.sync===v) return; app.sync=v; const el=document.querySelector("#syncDot"); if(el) el.outerHTML=syncChip(); }
+
+function seqFor(order,rounds){ const s=[]; for(let r=0;r<rounds;r++){ const row=r%2===0?order:[...order].reverse(); s.push(...row);} return s; }
+function takenMap(st){ const m={}; (st.picks||[]).forEach(p=>m[p.team]={player:p.player,n:p.n}); return m; }
+function totalPicks(st){ return st.players.length*st.slots; }
+function onClock(st){ const i=(st.picks||[]).length; if(i>=totalPicks(st)) return -1; return seqFor(st.order,st.slots)[i]; }
+function nextMyPick(st,me){ const seq=seqFor(st.order,st.slots); for(let i=(st.picks||[]).length;i<seq.length;i++){ if(seq[i]===me) return i+1; } return null; }
+
+/* ---------------- render ---------------- */
+const $=s=>document.querySelector(s);
+function render(){
+  const a=$("#app");
+  if(!app.state||!app.state.started){ a.innerHTML=setupView(); wireSetup(); return; }
+  a.innerHTML = header() + tabsBar() + `<main>${ app.tab==="draft"?draftView() : app.tab==="order"?orderView() : rosterView() }</main>`;
+  wireMain();
+}
+
+function header(){
+  const st=app.state, clk=onClock(st);
+  const meName = app.me.me!=null ? st.players[app.me.me] : "Pick name";
+  let clock;
+  if(clk<0){ clock=`<div class="clock done"><b class="who">🏆 Draft complete</b><span class="turn-tag" style="background:#12a05c;color:#fff">DONE</span></div>`; }
+  else{
+    const i=(st.picks||[]).length, rnd=Math.floor(i/st.players.length)+1, inr=i%st.players.length+1;
+    const mine = app.me.me===clk;
+    clock=`<div class="clock"><span class="pulse"></span>
+      <div><div class="lbl">On the clock</div><div class="who">${st.players[clk]}</div></div>
+      <span class="turn-tag">${mine?"YOUR PICK":"R"+rnd+" · P"+inr}</span></div>`;
+  }
+  return `<header>
+    <div class="htop">
+      <div class="brand"><b>Draft Room</b><span>World Cup 2026 ${syncChip()}</span></div>
+      <button class="me-chip" id="meBtn">You: <b>${meName}</b> ▾</button>
+    </div>${clock}
+  </header>`;
+}
+function tabsBar(){
+  const picked=(app.state.picks||[]).length, tot=totalPicks(app.state);
+  return `<div class="tabs">
+    <button data-tab="draft" class="${app.tab==="draft"?"on":""}">Draft<span class="pill">${tot-picked}</span></button>
+    <button data-tab="order" class="${app.tab==="order"?"on":""}">Order</button>
+    <button data-tab="rosters" class="${app.tab==="rosters"?"on":""}">Rosters</button>
+  </div>`;
+}
+
+function draftView(){
+  const st=app.state, taken=takenMap(st), clk=onClock(st);
+  const canPick = clk>=0 && (app.me.me===clk || app.me.commish);
+  const f=app.filter.trim().toLowerCase();
+  let body="";
+  GROUPS.forEach(g=>{
+    const list=TEAMS.filter(t=>t.group===g).filter(t=>!f || t.name.toLowerCase().includes(f) || t.code.toLowerCase().includes(f));
+    if(!list.length) return;
+    body+=`<div class="grp" data-grp="${g}"><h3>Group ${g}</h3>`;
+    list.forEach(t=>{
+      const tk=taken[t.code];
+      if(tk){
+        const mng=app.me.commish;
+        body+=`<div class="team taken ${mng?"mng":""}" ${mng?`data-manage="${t.code}"`:""}><span class="flag">${t.flag}</span>
+          <div class="nm">${t.name}</div>
+          <div class="by"><b>${st.players[tk.player]}</b><span>pick #${tk.n}</span></div>${mng?'<span class="edit">edit</span>':""}</div>`;
+      }else{
+        body+=`<button class="team ${canPick?"pick-on":""}" data-pick="${t.code}">
+          <span class="flag">${t.flag}</span>
+          <div class="nm">${t.name}<small>Group ${t.group}</small></div>
+          <span class="code">${t.code}</span></button>`;
+      }
+    });
+    body+=`</div>`;
+  });
+  let note;
+  if(clk<0) note=`<p class="hint">Every pick is in. Check the Rosters tab.</p>`;
+  else if(app.me.me==null) note=`<p class="hint">Tap “You” up top to pick who you are, then draft on your turn.</p>`;
+  else if(canPick) note=`<p class="hint">It’s your turn — tap a country to draft it.</p>`;
+  else { const np=nextMyPick(st,app.me.me); note=`<p class="hint">Waiting on <b>${st.players[clk]}</b>.${np?` You’re up at pick #${np}.`:""}</p>`; }
+  const picked=(st.picks||[]).length;
+  const cbar = app.me.commish ? `<div class="cbar">
+      <span class="cbadge">Commissioner</span>
+      <button class="cundo" id="undoLast" ${picked?"":"disabled"}>↩ Undo last pick</button>
+    </div>${ picked?`<p class="hint">Tap any drafted team to swap it or roll back.</p>`:"" }` : "";
+  return `${cbar}<div class="search">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#13231b" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3-3"/></svg>
+      <input id="search" placeholder="Search 48 teams…" value="${app.filter.replace(/"/g,'&quot;')}" />
+    </div>${note}${body}`;
+}
+
+function orderView(){
+  const st=app.state, seq=seqFor(st.order,st.slots), picks=st.picks||[];
+  let out="";
+  for(let r=0;r<st.slots;r++){
+    out+=`<div class="round"><div class="rh"><b>Round ${r+1}</b><i>${r%2===0?"normal order":"snake (reversed)"}</i></div>`;
+    for(let c=0;c<st.players.length;c++){
+      const idx=r*st.players.length+c, n=idx+1, pl=seq[idx], pk=picks[idx];
+      const live=idx===picks.length, mine=pl===app.me.me;
+      const t=pk?TEAM[pk.team]:null;
+      out+=`<div class="slot ${pk?"":"empty"} ${live?"live":""} ${mine&&!pk?"mine":""}">
+        <span class="pn">${n}</span><span class="pl">${st.players[pl]}</span>
+        <span class="tm">${ t?`<span class="f">${t.flag}</span>${t.name}` : live?"on the clock…":"—" }</span></div>`;
+    }
+    out+=`</div>`;
+  }
+  return out;
+}
+
+function rosterView(){
+  const st=app.state; let out="";
+  st.players.forEach((nm,pi)=>{
+    const mine=pi===app.me.me;
+    const teams=(st.picks||[]).filter(p=>p.player===pi).sort((a,b)=>a.n-b.n);
+    out+=`<div class="rost ${mine?"youbox":""}">
+      <div class="rt"><b>${nm}${mine?'<span class="youtag">you</span>':""}</b><span class="ct">${teams.length}/${st.slots}</span></div>`;
+    if(teams.length){ out+=`<div class="chips">`+teams.map(p=>{const t=TEAM[p.team];return `<span class="chip"><span class="f">${t.flag}</span>${t.name}</span>`;}).join("")+`</div>`; }
+    else out+=`<div class="none">No picks yet</div>`;
+    out+=`</div>`;
+  });
+  return out;
+}
+
+function setupView(){
+  const s=app.setup, cap=s.names.length*s.picks;
+  const over=cap>48, ready=s.names.length>=2 && !over;
+  return `<header><div class="htop"><div class="brand"><b>Draft Room</b><span>World Cup 2026</span></div></div></header>
+  <div class="pad">
+    <h2>Set up the draft</h2>
+    <p class="sub">Whoever opens this first sets it up — then send the same link to the league and everyone picks on the same board. It updates live for all of you.</p>
+    <div class="field">
+      <label>Players (in any order)</label>
+      <div class="addrow"><input id="pname" placeholder="Add a name" maxlength="14"/><button id="addP">Add</button></div>
+      <div class="plist">${ s.names.map((n,i)=>`<div class="prow"><span class="n">${i+1}</span><span class="nm">${n}</span><button class="x" data-rm="${i}">×</button></div>`).join("") || `<div class="none" style="color:#6c766f;font-size:13px;padding:4px 2px">No players yet. Add at least 2.</div>` }</div>
+    </div>
+    <div class="field">
+      <label>Teams per player</label>
+      <div class="seg">${[8,9,10].map(v=>`<button data-picks="${v}" class="${s.picks===v?"on":""}">${v}</button>`).join("")}</div>
+      <div class="cap ${over?"warn":""}">${ over?`${s.names.length} × ${s.picks} = ${cap} teams needed, only 48 available. Lower the count or players.`:`${s.names.length||0} players × ${s.picks} = ${cap} of 48 teams drafted` }</div>
+    </div>
+    <button class="cta" id="start" ${ready?"":"disabled"}>Randomize order &amp; start</button>
+    <button class="ghost" id="resetAll">Reset everything</button>
+  </div>`;
+}
+
+/* ---------------- wiring ---------------- */
+function wireSetup(){
+  const add=()=>{ const el=$("#pname"); const v=el.value.trim(); if(v && app.setup.names.length<8){ app.setup.names.push(v);} render(); setTimeout(()=>{const p=$("#pname"); if(p)p.focus();},0); };
+  $("#addP").onclick=add;
+  $("#pname").onkeydown=e=>{ if(e.key==="Enter") add(); };
+  document.querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{ app.setup.names.splice(+b.dataset.rm,1); render(); });
+  document.querySelectorAll("[data-picks]").forEach(b=>b.onclick=()=>{ app.setup.picks=+b.dataset.picks; render(); });
+  $("#start").onclick=()=>{
+    const order=app.setup.names.map((_,i)=>i);
+    for(let i=order.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [order[i],order[j]]=[order[j],order[i]]; }
+    app.state={ rev:0, started:true, players:[...app.setup.names], slots:app.setup.picks, order, picks:[] };
+    app.tab="draft"; render();   // update UI immediately
+    persist(app.state);          // save in background, can't block
+  };
+  $("#resetAll").onclick=()=>{ if(confirm("Clear the whole draft for everyone?")){ app.state=null; app.setup={names:[],picks:9}; render(); wipe(); } };
+}
+
+function wireMain(){
+  document.querySelectorAll("[data-tab]").forEach(b=>b.onclick=()=>{ app.tab=b.dataset.tab; render(); });
+  const meBtn=$("#meBtn"); if(meBtn) meBtn.onclick=openMe;
+  const s=$("#search");
+  if(s){ s.oninput=()=>{ app.filter=s.value; const f=s.value.trim().toLowerCase();
+      document.querySelectorAll(".grp").forEach(g=>{ let any=false;
+        g.querySelectorAll(".team").forEach(c=>{ const nm=c.querySelector(".nm").textContent.toLowerCase(); const show=!f||nm.includes(f); c.style.display=show?"":"none"; if(show)any=true; });
+        g.style.display=any?"":"none"; });
+    }; }
+  document.querySelectorAll("[data-pick]").forEach(b=>b.onclick=()=>doPick(b.dataset.pick));
+  const ub=$("#undoLast"); if(ub) ub.onclick=undoLast;
+  document.querySelectorAll("[data-manage]").forEach(b=>b.onclick=()=>openManage(b.dataset.manage));
+}
+
+function doPick(code){
+  const st=app.state; if(!st) return;
+  const clk=onClock(st);
+  if(clk<0) return render();
+  const allowed = app.me.me===clk || app.me.commish;
+  if(!allowed){ render(); return; }
+  if(takenMap(st)[code]){ render(); return; } // already taken
+  const n=(st.picks).length+1;
+  st.picks.push({n, player:clk, team:code});
+  app.tab="draft"; render();   // update UI immediately
+  persist(st);                 // save in background, can't block
+}
+
+/* ---- commissioner overrides ---- */
+function undoLast(){ const st=app.state; if(!st||!(st.picks||[]).length) return; st.picks.pop(); render(); persist(st); }
+function swapPick(code,newCode){
+  const st=app.state; if(takenMap(st)[newCode]) return;
+  const pk=(st.picks||[]).find(p=>p.team===code); if(!pk) return;
+  pk.team=newCode; $("#modal").innerHTML=""; render(); persist(st);
+}
+function rollbackTo(n){
+  const st=app.state; st.picks=(st.picks||[]).filter(p=>p.n<n);
+  $("#modal").innerHTML=""; render(); persist(st);
+}
+function openManage(code){
+  const st=app.state, pk=(st.picks||[]).find(p=>p.team===code); if(!pk) return;
+  const t=TEAM[code], owner=st.players[pk.player], taken=takenMap(st);
+  const avail=TEAMS.filter(x=>!taken[x.code]);
+  const later=(st.picks||[]).filter(p=>p.n>=pk.n).length;
+  $("#modal").innerHTML=`<div class="scrim" id="scrim"><div class="sheet">
+    <h4>Pick #${pk.n} · ${owner}</h4>
+    <p>Currently holds ${t.flag} <b>${t.name}</b>. Fix a misclick by swapping the team, or roll the draft back to this pick.</p>
+    <div class="mlabel">Swap to an available team</div>
+    <div class="swaplist">${ avail.length? avail.map(x=>`<button class="swapop" data-swap="${x.code}"><span class="f">${x.flag}</span>${x.name}<span class="gt">${x.group}</span></button>`).join("") : `<div class="none" style="padding:8px 2px">No teams left to swap to.</div>` }</div>
+    <button class="danger" id="rollback">↩ Undo this &amp; later picks (${later})</button>
+    <button class="close" id="closeMng">Cancel</button>
+  </div></div>`;
+  document.querySelectorAll("[data-swap]").forEach(b=>b.onclick=()=>swapPick(code,b.dataset.swap));
+  $("#rollback").onclick=()=>{ if(confirm(`Roll back to pick #${pk.n}? This removes ${later} pick${later>1?"s":""} and resumes the draft from there.`)) rollbackTo(pk.n); };
+  $("#closeMng").onclick=()=>{ $("#modal").innerHTML=""; };
+  $("#scrim").onclick=e=>{ if(e.target.id==="scrim") $("#modal").innerHTML=""; };
+}
+
+/* identity / commish sheet */
+function openMe(){
+  const st=app.state;
+  $("#modal").innerHTML=`<div class="scrim" id="scrim"><div class="sheet">
+    <h4>Who are you?</h4><p>Pick your name so the board only lets you draft on your turn.</p>
+    ${st.players.map((nm,i)=>`<button class="opt ${app.me.me===i?"on":""}" data-me="${i}"><span class="n">${i+1}</span>${nm}</button>`).join("")}
+    <div class="toggle"><div class="tx">I’m running the draft<small>Lets you pick for whoever is on the clock (handy when someone’s away)</small></div><div class="sw ${app.me.commish?"on":""}" id="commish"></div></div>
+    <button class="close" id="closeMe">Done</button>
+  </div></div>`;
+  document.querySelectorAll("[data-me]").forEach(b=>b.onclick=()=>{ app.me.me=+b.dataset.me; openMe(); render(); persistMe(app.me); });
+  $("#commish").onclick=()=>{ app.me.commish=!app.me.commish; openMe(); render(); persistMe(app.me); };
+  $("#closeMe").onclick=()=>{ $("#modal").innerHTML=""; };
+  $("#scrim").onclick=e=>{ if(e.target.id==="scrim") $("#modal").innerHTML=""; };
+}
+
+/* ---------------- boot + live sync ---------------- */
+(function(){
+  app.me=loadMe();          // identity is stored on this device
+  render();                 // paint immediately
+  loadState().then(st=>{ if(st){ app.state=st; render(); } }); // hydrate shared draft + set sync chip
+  // poll for other players' picks
+  setInterval(()=>{
+    loadState().then(latest=>{
+      const curRev=app.state?app.state.rev:-1, newRev=latest?latest.rev:-1;
+      if(latest && newRev!==curRev){ app.state=latest; render(); }
+    });
+  },4000);
+})();
+</script>
+</body>
+</html>

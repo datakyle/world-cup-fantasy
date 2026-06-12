@@ -1,0 +1,265 @@
+{
+  "_snapshot_taken": "2026-06-11T06:55:27",
+  "_source": "https://wc-draft-room.vercel.app/api/draft",
+  "_complete": true,
+  "rev": 51,
+  "players": [
+    "Yosia",
+    "Jeremiah",
+    "Tony",
+    "Kyle",
+    "Kenneth",
+    "Ethan"
+  ],
+  "slots": 8,
+  "order": [
+    3,
+    5,
+    4,
+    2,
+    0,
+    1
+  ],
+  "picks": [
+    {
+      "n": 1,
+      "player": 3,
+      "team": "FRA"
+    },
+    {
+      "n": 2,
+      "player": 5,
+      "team": "MEX"
+    },
+    {
+      "n": 3,
+      "player": 4,
+      "team": "ESP"
+    },
+    {
+      "n": 4,
+      "player": 2,
+      "team": "BRA"
+    },
+    {
+      "n": 5,
+      "player": 0,
+      "team": "ARG"
+    },
+    {
+      "n": 6,
+      "player": 1,
+      "team": "NED"
+    },
+    {
+      "n": 7,
+      "player": 1,
+      "team": "GER"
+    },
+    {
+      "n": 8,
+      "player": 0,
+      "team": "ENG"
+    },
+    {
+      "n": 9,
+      "player": 2,
+      "team": "POR"
+    },
+    {
+      "n": 10,
+      "player": 4,
+      "team": "BEL"
+    },
+    {
+      "n": 11,
+      "player": 5,
+      "team": "USA"
+    },
+    {
+      "n": 12,
+      "player": 3,
+      "team": "COL"
+    },
+    {
+      "n": 13,
+      "player": 3,
+      "team": "NOR"
+    },
+    {
+      "n": 14,
+      "player": 5,
+      "team": "SWE"
+    },
+    {
+      "n": 15,
+      "player": 4,
+      "team": "MAR"
+    },
+    {
+      "n": 16,
+      "player": 2,
+      "team": "SUI"
+    },
+    {
+      "n": 17,
+      "player": 0,
+      "team": "JPN"
+    },
+    {
+      "n": 18,
+      "player": 1,
+      "team": "CRO"
+    },
+    {
+      "n": 19,
+      "player": 1,
+      "team": "AUS"
+    },
+    {
+      "n": 20,
+      "player": 0,
+      "team": "PAR"
+    },
+    {
+      "n": 21,
+      "player": 2,
+      "team": "URU"
+    },
+    {
+      "n": 22,
+      "player": 4,
+      "team": "SEN"
+    },
+    {
+      "n": 23,
+      "player": 5,
+      "team": "CAN"
+    },
+    {
+      "n": 24,
+      "player": 3,
+      "team": "ECU"
+    },
+    {
+      "n": 25,
+      "player": 3,
+      "team": "TUR"
+    },
+    {
+      "n": 26,
+      "player": 5,
+      "team": "ALG"
+    },
+    {
+      "n": 27,
+      "player": 4,
+      "team": "AUT"
+    },
+    {
+      "n": 28,
+      "player": 2,
+      "team": "EGY"
+    },
+    {
+      "n": 29,
+      "player": 0,
+      "team": "KSA"
+    },
+    {
+      "n": 30,
+      "player": 1,
+      "team": "PAN"
+    },
+    {
+      "n": 31,
+      "player": 1,
+      "team": "NZL"
+    },
+    {
+      "n": 32,
+      "player": 0,
+      "team": "COD"
+    },
+    {
+      "n": 33,
+      "player": 2,
+      "team": "GHA"
+    },
+    {
+      "n": 34,
+      "player": 4,
+      "team": "CZE"
+    },
+    {
+      "n": 35,
+      "player": 5,
+      "team": "IRN"
+    },
+    {
+      "n": 36,
+      "player": 3,
+      "team": "CIV"
+    },
+    {
+      "n": 37,
+      "player": 3,
+      "team": "KOR"
+    },
+    {
+      "n": 38,
+      "player": 5,
+      "team": "IRQ"
+    },
+    {
+      "n": 39,
+      "player": 4,
+      "team": "RSA"
+    },
+    {
+      "n": 40,
+      "player": 2,
+      "team": "SCO"
+    },
+    {
+      "n": 41,
+      "player": 0,
+      "team": "BIH"
+    },
+    {
+      "n": 42,
+      "player": 1,
+      "team": "HAI"
+    },
+    {
+      "n": 43,
+      "player": 1,
+      "team": "QAT"
+    },
+    {
+      "n": 44,
+      "player": 0,
+      "team": "UZB"
+    },
+    {
+      "n": 45,
+      "player": 2,
+      "team": "TUN"
+    },
+    {
+      "n": 46,
+      "player": 4,
+      "team": "JOR"
+    },
+    {
+      "n": 47,
+      "player": 5,
+      "team": "CPV"
+    },
+    {
+      "n": 48,
+      "player": 3,
+      "team": "CUW"
+    }
+  ]
+}

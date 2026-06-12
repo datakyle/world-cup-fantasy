@@ -1,0 +1,9 @@
+{
+  "name": "wc-draft-room",
+  "version": "1.0.0",
+  "private": true,
+  "description": "World Cup 2026 fantasy snake-draft room",
+  "engines": {
+    "node": ">=18"
+  }
+}

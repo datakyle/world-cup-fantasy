@@ -1,0 +1,20 @@
+# OS junk
+.DS_Store
+
+# Vercel local link / build output (each app also has its own .gitignore)
+.vercel
+.vercel/
+
+# Node
+node_modules/
+
+# Redundant build artifact (source lives in files/wc-draft-vercel/)
+*.zip
+
+# Local env — never commit secrets
+.env
+.env.*
+!.env.example
+
+# Claude Code local settings
+.claude/settings.local.json
