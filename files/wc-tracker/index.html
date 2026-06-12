@@ -176,7 +176,8 @@
 
 <script>
 const $ = (s,r=document)=>r.querySelector(s);
-const app = { tab:"schedule", data:null, open:{}, scrollPending:true, _tabSwitch:false };
+const app = { tab:"schedule", data:null, open:{}, scrollPending:true, _tabSwitch:false,
+              _lastHtml:null, _lastTab:null, _lastScroll:0, _deferTimer:null };
 
 function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
 function fmtAgo(iso){
@@ -375,24 +376,49 @@ function groupingView(){
 /* ---------- shell ---------- */
 function render(){
   const main=$("#main");
-  if(!app.data){ main.innerHTML='<div class="note">No data.</div>'; return; }
+  if(!app.data){ main.innerHTML='<div class="note">No data.</div>'; app._lastHtml=null; return; }
+  const tab=app.tab;
+  const html = tab==="schedule" ? matchesView() : tab==="table" ? groupingView() : leaderboardView();
+  const changed = html!==app._lastHtml || tab!==app._lastTab;
+
+  // Common case on the background poll: nothing visible changed and we aren't
+  // navigating, so leave the DOM — and the user's scroll position — untouched.
+  // Rebuilding identical innerHTML would reset scrollTop and stutter any
+  // in-progress momentum scroll for no reason.
+  if(!changed && !app._tabSwitch && !app.scrollPending) return;
+
   const prev=main.scrollTop;
-  main.innerHTML = app.tab==="schedule" ? matchesView() : app.tab==="table" ? groupingView() : leaderboardView();
-  if(app.tab==="leaderboard"){
-    main.querySelectorAll(".rhead").forEach(h=>h.onclick=()=>{
-      const pid=h.parentElement.dataset.pid; app.open[pid]=!app.open[pid]; render();
-    });
+  if(changed){
+    main.innerHTML = html;
+    app._lastHtml = html; app._lastTab = tab;
+    if(tab==="leaderboard"){
+      main.querySelectorAll(".rhead").forEach(h=>h.onclick=()=>{
+        const pid=h.parentElement.dataset.pid; app.open[pid]=!app.open[pid]; render();
+      });
+    }
   }
   // Scroll handling: jump to today when (re)opening Schedule; reset to top on a
-  // tab switch; otherwise preserve position so the 60s poll doesn't yank the user.
-  if(app.tab==="schedule" && app.scrollPending && scrollToToday()){
+  // tab switch; otherwise restore the prior position (only needed after a rebuild,
+  // since setting innerHTML resets scrollTop to 0).
+  if(tab==="schedule" && app.scrollPending && scrollToToday()){
     app.scrollPending=false;
   } else if(app._tabSwitch){
     main.scrollTop=0;
-  } else {
+  } else if(changed){
     main.scrollTop=prev;
   }
   app._tabSwitch=false;
+}
+// Background/poll updates funnel through here: if the user is mid-scroll, defer
+// the DOM swap until the gesture settles so we never yank or stutter an active
+// scroll. Tab taps and accordion toggles call render() directly and stay instant.
+function scheduleRender(){
+  if(Date.now()-app._lastScroll < 450){
+    clearTimeout(app._deferTimer);
+    app._deferTimer=setTimeout(scheduleRender, 250);
+    return;
+  }
+  render();
 }
 function setTab(t){
   app.tab=t;
@@ -402,12 +428,15 @@ function setTab(t){
   render();
 }
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
+// Track scroll activity so background re-renders can hold off until the user
+// stops scrolling (see scheduleRender).
+$("#main").addEventListener("scroll",()=>{ app._lastScroll=Date.now(); }, {passive:true});
 
 async function loadTracker(){
   try{
     const r=await fetch("/api/tracker",{cache:"no-store"});
     app.data=await r.json();
-    render();
+    scheduleRender();
     const s=app.data.sync;
     if(!app.data.seeded){ setSync("stale","Not seeded"); }
     else if(s&&s.ok===false){ setSync("err","Feed error"); }
