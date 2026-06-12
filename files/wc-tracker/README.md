@@ -41,12 +41,12 @@ Leaderboard**; the app opens on Schedule.
 
 - **Schedule** (default) — full 104-match schedule grouped by local day. Opening the tab
   auto-scrolls to **today** (marked with a green "Today" pill) and stays put across the
-  background refresh. Each match shows kickoff time, both teams with the **roster owner**
-  of each, and a live/full-time badge. Live and finished games show a **prominent
-  scoreboard line** (flags flanking a big score); live cards get a red accent border, a
-  red score, and a pulsing **LIVE** badge. The **winning team's row gets a subtle green
-  tint + bold name**. Upcoming matches show no score. Knockout fixtures with undetermined
-  teams show "TBD / Unowned".
+  background refresh. Each match is a **flat fixture card**: home team on the left, away
+  team on the right (flag + name + roster owner), with the **score in the middle** for
+  live/finished games or a subtle **"vs"** for upcoming ones. Live cards get a red accent
+  border, a red score, and a pulsing **LIVE** badge; finished cards show "Full time". The
+  **winning team's side gets a subtle green tint + bold name**. Knockout fixtures with
+  undetermined teams show "TBD / Unowned".
 - **Table** — all 12 group tables (flag, team, fantasy owner, live W-D-L record,
   points; top 2 highlighted), followed by the **knockout bracket** — each round
   (R32 → Final + 3rd place) shows its matchups with owners, live/full-time scores and

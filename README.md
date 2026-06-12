@@ -26,8 +26,6 @@ tools/
 files/
   wc-draft-vercel/        deployed draft room source (live — Vercel root dir for wc-draft-room)
   wc-tracker/             deployed tracker source (live — has its own README)
-  index.html, draft.js,   legacy flat copies of the draft room + a zip — superseded by
-  README.md, *.zip        wc-draft-vercel/; kept for history, not deployed
 draftping.py              (unused) on-the-clock iMessage notifier — not scheduled
 ```
 

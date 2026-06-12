@@ -85,26 +85,24 @@
   .st.live .ld{width:6px;height:6px;border-radius:50%;background:var(--live);animation:p 1.3s ease-out infinite}
   @keyframes p{0%{box-shadow:0 0 0 0 rgba(224,57,43,.5)}100%{box-shadow:0 0 0 6px rgba(224,57,43,0)}}
   .st.ft{background:#eef1ee;color:var(--muted)}
-  .side{display:flex;align-items:center;gap:10px;padding:5px 7px;border-radius:9px}
-  .side .f{font-size:21px;flex:none;width:26px;text-align:center}
-  .side .info{flex:1;min-width:0}
-  .side .info b{font-size:14.5px;font-weight:650;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .side .info .own{font-size:11px;color:var(--muted);margin-top:1px}
-  .side .info .own b{display:inline;font-weight:700;color:var(--green-d);font-size:11px}
-  .side .info .own.none{font-style:italic;opacity:.7}
-  .side .g{font-size:19px;font-weight:800;flex:none;width:26px;text-align:center;font-variant-numeric:tabular-nums;color:#b3bbb3}
-  .side.win{background:rgba(18,160,92,.09)}
-  .side.win .g,.side.win .info b{color:var(--ink)}
-  .side.win .info b{font-weight:800}
-  .side .g.has{color:var(--ink)}
-  /* live/finished scoreboard line */
+  /* flat fixture: home left · score/vs middle · away right */
   .match.islive{border-color:rgba(224,57,43,.4);box-shadow:0 0 0 1px rgba(224,57,43,.1)}
-  .scoreline{display:flex;align-items:center;justify-content:center;gap:18px;padding:3px 0 10px;margin-bottom:6px;border-bottom:1px solid #f1f3f0}
-  .scoreline .sf{font-size:24px;line-height:1}
-  .scoreline .sc{font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink);display:inline-flex;align-items:center;gap:12px;min-width:62px;justify-content:center;letter-spacing:.01em}
-  .scoreline .sc i{font-style:normal;color:#c4ccc4;font-weight:600;font-size:18px}
-  .scoreline .sc .vs{font-size:12px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.1em}
-  .scoreline.live .sc{color:var(--live)}
+  .fixture{display:flex;align-items:center;gap:6px}
+  .team{flex:1;min-width:0;display:flex;align-items:center;gap:9px;padding:5px 7px;border-radius:9px}
+  .team.away{flex-direction:row-reverse;text-align:right}
+  .team .tf{font-size:23px;flex:none;width:26px;text-align:center}
+  .team .ti{min-width:0}
+  .team .ti b{font-size:14px;font-weight:650;line-height:1.2;display:block}
+  .team .ti .own{font-size:11px;color:var(--muted);margin-top:2px}
+  .team .ti .own b{display:inline;font-weight:700;color:var(--green-d);font-size:11px;line-height:1}
+  .team .ti .own.none{font-style:italic;opacity:.7}
+  .team.win{background:rgba(18,160,92,.09)}
+  .team.win .ti b{font-weight:800;color:var(--ink)}
+  .mid{flex:none;text-align:center;min-width:50px;padding:0 2px}
+  .mid .sc{font-size:23px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink);display:inline-flex;align-items:center;gap:8px;justify-content:center}
+  .mid .sc i{font-style:normal;color:#c4ccc4;font-weight:600;font-size:15px}
+  .mid.live .sc{color:var(--live)}
+  .mid .vs{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
   /* grouping */
   .glegend{font-size:11.5px;color:var(--muted);background:#fff;border:1px solid var(--line);border-radius:11px;padding:9px 12px;margin-bottom:12px;line-height:1.4}
   .gtable{background:var(--card);border:1px solid var(--line);border-radius:13px;margin-bottom:10px;overflow:hidden}
@@ -246,24 +244,20 @@ function stageLabel(m){
   if(m.stage==="GROUP_STAGE"){ const g=(m.group||"").replace(/group[_ ]?/i,"").trim(); return g?("Group "+g):"Group stage"; }
   return STAGE[m.stage]||m.stage;
 }
-function ownerLine(side){
-  if(side.owner) return `<div class="own">Owner: <b>${esc(side.owner)}</b></div>`;
-  return `<div class="own none">Unowned</div>`;
-}
-function sideRow(side,win){
-  return `<div class="side ${win?'win':''}">
-    <span class="f">${side.flag||"🏳️"}</span>
-    <div class="info"><b>${esc(side.name)}</b>${ownerLine(side)}</div>
+// One side of the fixture (flag + name + owner). `pos` is "home" or "away";
+// away mirrors so the flag sits on the outer edge.
+function teamSide(side,pos,win){
+  const own = side.owner ? `Owner: <b>${esc(side.owner)}</b>` : 'Unowned';
+  return `<div class="team ${pos} ${win?'win':''}">
+    <span class="tf">${side.flag||"🏳️"}</span>
+    <div class="ti"><b>${esc(side.name)}</b><div class="own ${side.owner?'':'none'}">${own}</div></div>
   </div>`;
 }
-// Prominent scoreboard line — shown on live & finished cards.
-function scoreLine(m){
-  const h=m.hg, a=m.ag, have=h!=null&&a!=null;
-  return `<div class="scoreline ${m.live?'live':''}">
-    <span class="sf">${m.home.flag||"🏳️"}</span>
-    <span class="sc">${have?`${h}<i>–</i>${a}`:'<b class="vs">vs</b>'}</span>
-    <span class="sf">${m.away.flag||"🏳️"}</span>
-  </div>`;
+// Middle cell: big score for live/finished, a subtle "vs" otherwise.
+function midCell(m){
+  if((m.live||m.finished) && m.hg!=null && m.ag!=null)
+    return `<div class="mid ${m.live?'live':''}"><span class="sc">${m.hg}<i>–</i>${m.ag}</span></div>`;
+  return `<div class="mid"><span class="vs">vs</span></div>`;
 }
 function matchCard(m){
   const d=new Date(m.utc);
@@ -276,9 +270,11 @@ function matchCard(m){
   else if(m.finished) st=`<span class="st ft">Full time</span>`;
   return `<div class="match ${m.live?'islive':''}">
     <div class="mmeta"><span class="time">${time}</span><span class="stg">${esc(stageLabel(m))}</span>${st}</div>
-    ${showScore?scoreLine(m):''}
-    ${sideRow(m.home,hWin)}
-    ${sideRow(m.away,aWin)}
+    <div class="fixture">
+      ${teamSide(m.home,'home',hWin)}
+      ${midCell(m)}
+      ${teamSide(m.away,'away',aWin)}
+    </div>
   </div>`;
 }
 function localISO(d){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`; }
