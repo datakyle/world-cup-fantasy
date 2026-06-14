@@ -115,9 +115,11 @@
   .gf{font-size:19px;flex:none;width:24px;text-align:center}
   .gi{flex:1;min-width:0}
   .gi b{font-size:14px;font-weight:650;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .gi .gown{font-size:10.5px;color:var(--muted);margin-top:1px}
+  .gi .gown{font-size:10.5px;color:var(--muted);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .gi .gown b{display:inline;color:var(--green-d);font-weight:700;font-size:10.5px}
   .gi .gown i{font-style:italic}
+  .gi .gown .gdr{color:#9aa39c;font-weight:700;font-variant-numeric:tabular-nums}
+  .gi .gown .gdr::before{content:"·";margin:0 4px;color:#cdd4cd}
   .rec{flex:none;display:inline-flex;align-items:baseline;gap:1px;font-variant-numeric:tabular-nums}
   .rec b{font-size:13.5px;font-weight:800;width:15px;text-align:center}
   .rec i{font-style:normal;font-size:9px;color:var(--muted);font-weight:700;margin-right:3px}
@@ -310,6 +312,18 @@ function scrollToToday(){
 }
 
 /* ---------- grouping (group tables + bracket) ---------- */
+// Frozen league draft (snapshot 2026-06-11, data/draft-final.json): team code →
+// overall pick number. Snake draft, 6 managers × 8 rounds = 48 picks, so the
+// draft round is ceil(pick / 6).
+const DRAFT_ROUND_SIZE = 6;
+const DRAFT_PICK = {FRA:1,MEX:2,ESP:3,BRA:4,ARG:5,NED:6,GER:7,ENG:8,POR:9,BEL:10,USA:11,COL:12,NOR:13,SWE:14,MAR:15,SUI:16,JPN:17,CRO:18,AUS:19,PAR:20,URU:21,SEN:22,CAN:23,ECU:24,TUR:25,ALG:26,AUT:27,EGY:28,KSA:29,PAN:30,NZL:31,COD:32,GHA:33,CZE:34,IRN:35,CIV:36,KOR:37,IRQ:38,RSA:39,SCO:40,BIH:41,HAI:42,QAT:43,UZB:44,TUN:45,JOR:46,CPV:47,CUW:48};
+// Compact "drafted here" tag for a team: Round X · overall pick #N.
+function draftTag(code){
+  const n = DRAFT_PICK[code];
+  if(!n) return '';
+  const r = Math.ceil(n/DRAFT_ROUND_SIZE);
+  return `<span class="gdr" title="Drafted in round ${r} (pick #${n} overall)">R${r} · #${n}</span>`;
+}
 function recordCell(t){
   return `<span class="rec"><b>${t.gW}</b><i>W</i><b>${t.gD}</b><i>D</i><b>${t.gL}</b><i>L</i></span>`;
 }
@@ -318,7 +332,7 @@ function groupTeamRow(t,i){
   return `<div class="gteam ${adv?'adv':''}">
     <span class="gpos">${i+1}</span>
     <span class="gf">${t.flag||"🏳️"}</span>
-    <div class="gi"><b>${esc(t.name)}</b><div class="gown">${t.owner?('Owner: <b>'+esc(t.owner)+'</b>'):'<i>Unowned</i>'}</div></div>
+    <div class="gi"><b>${esc(t.name)}</b><div class="gown">${t.owner?('Owner: <b>'+esc(t.owner)+'</b>'):'<i>Unowned</i>'}${draftTag(t.code)}</div></div>
     ${recordCell(t)}
     <span class="gpts">${t.gPts}<small>pts</small></span>
   </div>`;
