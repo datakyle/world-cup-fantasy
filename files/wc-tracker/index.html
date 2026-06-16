@@ -11,9 +11,11 @@
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%}
-  body{background:#d8ddd6;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);display:flex;justify-content:center}
-  #phone{width:100%;max-width:460px;background:var(--bg);min-height:100vh;display:flex;flex-direction:column;box-shadow:0 0 40px rgba(0,0,0,.18)}
-  @media(min-width:500px){body{padding:22px 0}#phone{min-height:calc(100vh - 44px);border-radius:30px;overflow:hidden}}
+  /* The page itself never scrolls — only <main> does (see min-height:0 below).
+     This keeps the header + tabs permanently pinned at the top. */
+  body{background:#d8ddd6;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);display:flex;justify-content:center;overflow:hidden}
+  #phone{width:100%;max-width:460px;background:var(--bg);height:100dvh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,.18)}
+  @media(min-width:500px){body{padding:22px 0}#phone{height:calc(100dvh - 44px);border-radius:30px}}
   header{background:linear-gradient(160deg,var(--pitch),var(--pitch2));color:#fff;padding:18px 16px 16px;position:sticky;top:0;z-index:20;text-align:center}
   .brand{display:flex;flex-direction:column;align-items:center;gap:7px}
   .brand .kicker{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:#9fd3ba;font-weight:700}
@@ -33,7 +35,7 @@
   .tabs button{flex:1;border:0;background:none;padding:13px 4px;font-size:13.5px;font-weight:600;color:var(--muted);cursor:pointer;position:relative}
   .tabs button.on{color:var(--ink)}
   .tabs button.on::after{content:"";position:absolute;left:20%;right:20%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--green)}
-  main{flex:1;overflow-y:auto;padding:14px 14px 34px;position:relative}
+  main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 34px;position:relative}
   /* leaderboard */
   .row{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:9px;overflow:hidden}
   .rhead{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer}
@@ -55,6 +57,7 @@
   .tm .nm{flex:1;min-width:0}
   .tm .nm b{font-size:14px;font-weight:650;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .tm .nm .rd{font-size:11px;color:var(--muted);margin-top:1px}
+  .tm .nm .dft{font-size:10.5px;color:#9aa39c;margin-top:2px;font-weight:600}
   .tm .pts{font-size:15px;font-weight:800;flex:none;width:34px;text-align:right;font-variant-numeric:tabular-nums}
   .tm.dead{opacity:.5}
   .badge{font-size:9.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;padding:2px 6px;border-radius:6px;background:#e7efe9;color:var(--green-d);margin-left:6px}
@@ -195,9 +198,10 @@ function teamRow(t){
   const rec = `${t.gW}-${t.gD}-${t.gL}`;
   const badge = (t.round && t.round!=="Group stage" && t.round!=="—")
     ? `<span class="badge ${champ?'champ':''}">${esc(t.round)}${t.bonus?` +${t.bonus}`:''}</span>` : '';
+  const dft = t.pick ? `<div class="dft">Drafted · Round ${t.draftRound} · pick #${t.pick} overall</div>` : '';
   return `<div class="tm ${dead?'dead':''}">
     <span class="f">${t.flag||''}</span>
-    <div class="nm"><b>${esc(t.name)}${badge}</b><div class="rd">${dead?'Did not qualify':('Group '+rec+' · '+t.gPts+' pts'+(t.bonus?` · bonus +${t.bonus}`:''))}</div></div>
+    <div class="nm"><b>${esc(t.name)}${badge}</b><div class="rd">${dead?'Did not qualify':('Group '+rec+' · '+t.gPts+' pts'+(t.bonus?` · bonus +${t.bonus}`:''))}</div>${dft}</div>
     <span class="pts">${t.total}</span>
   </div>`;
 }

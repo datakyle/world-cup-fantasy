@@ -53,9 +53,14 @@ Leaderboard**; the app opens on Schedule.
   the winner emphasized; undrawn rounds read "Set after the group stage". Group records
   are computed server-side (`buildGroups`); the bracket is built client-side from the
   knockout matches in the feed.
-- **Leaderboard** — players ranked by total; tap a row to expand the per-team breakdown.
-  Ends with a **"How scoring works" card** built from the live `config` (group W/D/L +
-  flat knockout bonuses + team/player total rules), shown even before standings exist.
+- **Leaderboard** — players ranked by total; tap a row to expand the per-team breakdown
+  (each team shows its group record, points, furthest round, and **when it was drafted** —
+  round + overall pick #). Ends with a **"How scoring works" card** built from the live
+  `config` (group W/D/L + flat knockout bonuses + team/player total rules), shown even
+  before standings exist.
+
+  Draft order comes from the `DRAFT_ORDER` constant in `api/_lib.js` (frozen mirror of
+  `data/draft-final.json`); regenerate it if the league ever re-drafts.
 
 ## Auto-refresh (client-side, API-friendly)
 

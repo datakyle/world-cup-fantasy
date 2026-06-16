@@ -26,6 +26,19 @@ const TEAMS = [
 
 const TEAM = Object.fromEntries(TEAMS.map((t) => [t.code, t]));
 
+// ---- Frozen draft order (code -> overall pick #) --------------------------
+// Mirrors data/draft-final.json (6 players × 8 = 48 picks, snake). Round =
+// ceil(pick / playerCount). Re-generate this if the league ever re-drafts —
+// same trigger as re-running tools/snapshot_draft.py + re-seeding.
+const DRAFT_ORDER = {
+  FRA: 1, MEX: 2, ESP: 3, BRA: 4, ARG: 5, NED: 6, GER: 7, ENG: 8,
+  POR: 9, BEL: 10, USA: 11, COL: 12, NOR: 13, SWE: 14, MAR: 15, SUI: 16,
+  JPN: 17, CRO: 18, AUS: 19, PAR: 20, URU: 21, SEN: 22, CAN: 23, ECU: 24,
+  TUR: 25, ALG: 26, AUT: 27, EGY: 28, KSA: 29, PAN: 30, NZL: 31, COD: 32,
+  GHA: 33, CZE: 34, IRN: 35, CIV: 36, KOR: 37, IRQ: 38, RSA: 39, SCO: 40,
+  BIH: 41, HAI: 42, QAT: 43, UZB: 44, TUN: 45, JOR: 46, CPV: 47, CUW: 48,
+};
+
 // ---- football-data → our code mapping -------------------------------------
 // We match on normalized name first (most reliable), then 3-letter code.
 // ALIASES cover names football-data spells differently than we do. Anything
@@ -154,16 +167,19 @@ function computeStandings(blob, matches) {
 
   const rosters = blob.rosters || {};
   const players = blob.players || [];
+  const playerCount = players.length || 6;
   const standings = players.map((name, pid) => {
     const codes = rosters[String(pid)] || [];
     const teams = codes.map((code) => {
       const s = stat[code] || { gW: 0, gD: 0, gL: 0, gPts: 0, rank: -1 };
       const b = bonusFor(s);
       const t = TEAM[code] || { name: code, flag: '' };
+      const pick = DRAFT_ORDER[code] || null;            // overall draft pick #
       return {
         code, name: t.name, flag: t.flag,
         gW: s.gW, gD: s.gD, gL: s.gL, gPts: s.gPts,
         round: b.round, bonus: b.bonus,
+        pick, draftRound: pick ? Math.ceil(pick / playerCount) : null,
         total: s.gPts + b.bonus,
       };
     });
