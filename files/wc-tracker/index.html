@@ -37,6 +37,16 @@
   .tabs button.on::after{content:"";position:absolute;left:20%;right:20%;bottom:0;height:3px;border-radius:3px 3px 0 0;background:var(--green)}
   main{flex:1;min-height:0;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:14px 14px 34px;position:relative}
   /* leaderboard */
+  .winner{display:flex;align-items:center;gap:13px;background:linear-gradient(120deg,var(--pitch),var(--pitch2));color:#fff;border-radius:15px;padding:14px 15px;margin-bottom:13px;box-shadow:0 5px 16px rgba(12,61,44,.3)}
+  .winner .wtrophy{font-size:30px;flex:none;line-height:1}
+  .winner .winfo{flex:1;min-width:0}
+  .winner .wlabel{font-size:9.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#9fd3ba}
+  .winner .wname{font-size:20px;font-weight:800;letter-spacing:-.01em;margin:1px 0 3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .winner .wnote{font-size:11.5px;line-height:1.45;color:#dcece4}
+  .winner .wnote b{color:#fff;font-weight:800}
+  .winner .wgd{flex:none;text-align:center;background:rgba(255,255,255,.13);border:1px solid rgba(255,255,255,.22);border-radius:11px;padding:7px 9px;min-width:50px}
+  .winner .wgd b{font-size:18px;font-weight:800;font-variant-numeric:tabular-nums;display:block;line-height:1.05}
+  .winner .wgd small{font-size:8.5px;font-weight:800;letter-spacing:.1em;text-transform:uppercase;color:#9fd3ba}
   .row{background:var(--card);border:1px solid var(--line);border-radius:14px;margin-bottom:9px;overflow:hidden}
   .rhead{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer}
   .rk{font-size:15px;font-weight:800;color:var(--muted);width:24px;text-align:center;flex:none}
@@ -192,6 +202,21 @@ function fmtAgo(iso){
 function setSync(cls,txt){ const el=$("#sync"); el.className="sync "+cls; el.innerHTML='<i class="dot"></i>'+txt; }
 
 /* ---------- leaderboard ---------- */
+// Signed goal-differential label: "+5", "0", "−3".
+function fmtGD(n){ n=n||0; return n>0?("+"+n):(n<0?("−"+Math.abs(n)):"0"); }
+// Each team's tournament goal differential (group + knockout), keyed by code,
+// derived straight from the match feed so the tie-break is live even before the
+// server recomputes standings.
+function teamGoalDiff(){
+  const ms=(app.data&&app.data.matches)||[], gd={};
+  ms.forEach(m=>{
+    if(m.hg==null||m.ag==null) return;
+    const h=m.home&&m.home.code, a=m.away&&m.away.code;
+    if(h) gd[h]=(gd[h]||0)+(m.hg-m.ag);
+    if(a) gd[a]=(gd[a]||0)+(m.ag-m.hg);
+  });
+  return gd;
+}
 function teamRow(t){
   const dead = t.round==="—";
   const champ = t.round==="Champion";
@@ -199,9 +224,11 @@ function teamRow(t){
   const badge = (t.round && t.round!=="Group stage" && t.round!=="—")
     ? `<span class="badge ${champ?'champ':''}">${esc(t.round)}${t.bonus?` +${t.bonus}`:''}</span>` : '';
   const dft = t.pick ? `<div class="dft">Drafted · Round ${t.draftRound} · pick #${t.pick} overall</div>` : '';
+  const meta = dead ? 'Did not qualify'
+    : ('Group '+rec+' · '+t.gPts+' pts'+(t.bonus?` · bonus +${t.bonus}`:'')+` · GD ${fmtGD(t._gd)}`);
   return `<div class="tm ${dead?'dead':''}">
     <span class="f">${t.flag||''}</span>
-    <div class="nm"><b>${esc(t.name)}${badge}</b><div class="rd">${dead?'Did not qualify':('Group '+rec+' · '+t.gPts+' pts'+(t.bonus?` · bonus +${t.bonus}`:''))}</div>${dft}</div>
+    <div class="nm"><b>${esc(t.name)}${badge}</b><div class="rd">${meta}</div>${dft}</div>
     <span class="pts">${t.total}</span>
   </div>`;
 }
@@ -218,14 +245,42 @@ function scoreKey(){
     <div class="skrow"><span class="skl">Loss</span><span class="skv">0</span></div>
     <div class="sksub">Knockout bonus <i>· furthest round reached, flat (not cumulative)</i></div>
     ${ko.map(([k,v])=>`<div class="skrow"><span class="skl">${k}</span><span class="skv">+${v}</span></div>`).join("")}
-    <div class="skfoot"><b>Team total</b> = group points + its single knockout bonus.<br><b>Player total</b> = the sum of all 8 drafted teams.</div>
+    <div class="skfoot"><b>Team total</b> = group points + its single knockout bonus.<br><b>Player total</b> = the sum of all 8 drafted teams.<br><b>Tie-break</b> = combined goal differential of all 8 teams across the whole tournament.</div>
+  </div>`;
+}
+// Winner summary — shown once the Final is played. Names the league champion and,
+// when the top total was a tie, spells out how goal differential decided it.
+function winnerBanner(st){
+  const ms=(app.data&&app.data.matches)||[];
+  const done = ms.some(m=>m.stage==="FINAL"&&m.finished);
+  if(!done || !st.length) return "";
+  const w=st[0], r=st[1];
+  const tied = r && r.total===w.total;
+  const note = tied
+    ? `Level with <b>${esc(r.name)}</b> on <b>${w.total} pts</b> — took it on goal differential, <b>${fmtGD(w._gd)}</b> to ${fmtGD(r._gd)}.`
+    : `Finished top of the table with <b>${w.total} pts</b> (GD <b>${fmtGD(w._gd)}</b>).`;
+  return `<div class="winner">
+    <div class="wtrophy">🏆</div>
+    <div class="winfo">
+      <div class="wlabel">League Champion</div>
+      <div class="wname">${esc(w.name)}</div>
+      <div class="wnote">${note}</div>
+    </div>
+    <div class="wgd"><b>${fmtGD(w._gd)}</b><small>GD</small></div>
   </div>`;
 }
 function leaderboardView(){
-  const d=app.data, st=(d&&d.standings)||[];
+  const d=app.data;
   if(d&&d.seeded===false) return `<div class="note">The tracker isn’t seeded yet.</div>`;
+  const gd=teamGoalDiff();
+  const st=((d&&d.standings)||[]).slice();
   if(!st.length) return `<div class="note" style="padding:14px 10px 8px">No standings yet — they’ll fill in once matches kick off.</div>`+scoreKey();
-  let html="";
+  // Roll each team's GD up to its manager, then re-rank with GD as the tie-break
+  // after total points (mirrors the server, and works even if the stored
+  // standings were ordered before this rule existed).
+  st.forEach(p=>{ p._gd=(p.teams||[]).reduce((a,t)=>a+(gd[t.code]||0),0); });
+  st.sort((a,b)=> b.total-a.total || b._gd-a._gd || b.groupPts-a.groupPts || a.name.localeCompare(b.name));
+  let html=winnerBanner(st);
   const um=(d.sync&&d.sync.unmatched)||[];
   if(um.length) html+=`<div class="warn"><b>Heads up:</b> ${um.length} team(s) from the feed couldn’t be matched (${esc(um.slice(0,4).join(", "))}${um.length>4?"…":""}).</div>`;
   st.forEach((p,i)=>{
@@ -233,11 +288,11 @@ function leaderboardView(){
     html+=`<div class="row ${i===0?'lead':''} ${isOpen?'open':''}" data-pid="${p.player}">
       <div class="rhead">
         <span class="rk">${i+1}</span>
-        <div class="who"><b>${esc(p.name)}</b><div class="split"><em>${p.groupPts}</em> group · <em>+${p.bonus}</em> bonus</div></div>
+        <div class="who"><b>${esc(p.name)}</b><div class="split"><em>${p.groupPts}</em> group · <em>+${p.bonus}</em> bonus · <em>${fmtGD(p._gd)}</em> GD</div></div>
         <div class="tot">${p.total}<small>pts</small></div>
         <svg class="chev" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m9 6 6 6-6 6"/></svg>
       </div>
-      <div class="teams">${(p.teams||[]).slice().sort((a,b)=>b.total-a.total).map(teamRow).join("")}</div>
+      <div class="teams">${(p.teams||[]).slice().sort((a,b)=>b.total-a.total||(gd[b.code]||0)-(gd[a.code]||0)).map(t=>teamRow(Object.assign({},t,{_gd:gd[t.code]||0}))).join("")}</div>
     </div>`;
   });
   return html+scoreKey();
