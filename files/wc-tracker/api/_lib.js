@@ -100,7 +100,7 @@ function computeStandings(blob, matches) {
   // Per-team accumulators
   const stat = {};
   TEAMS.forEach((t) => {
-    stat[t.code] = { code: t.code, gW: 0, gD: 0, gL: 0, gPts: 0, rank: -1, champion: false, runnerUp: false };
+    stat[t.code] = { code: t.code, gW: 0, gD: 0, gL: 0, gPts: 0, gf: 0, ga: 0, rank: -1, champion: false, runnerUp: false };
   });
 
   const codeOf = (apiTeam) => {
@@ -120,6 +120,18 @@ function computeStandings(blob, matches) {
     if (away && stat[away]) stat[away].rank = Math.max(stat[away].rank, rank);
 
     const finished = m.status === 'FINISHED';
+
+    // Goals for/against — accumulated across ALL rounds (group + knockout) for a
+    // manager-level goal-differential tie-break. This never touches points; it's
+    // only used to break ties between managers on equal totals. Penalty shootouts
+    // live in a separate field, so fullTime goals correctly exclude them.
+    if (finished) {
+      const ft = m.score && m.score.fullTime;
+      if (ft && typeof ft.home === 'number' && typeof ft.away === 'number') {
+        if (home && stat[home]) { stat[home].gf += ft.home; stat[home].ga += ft.away; }
+        if (away && stat[away]) { stat[away].gf += ft.away; stat[away].ga += ft.home; }
+      }
+    }
 
     // Group points — only finished group matches, per match.
     if (m.stage === 'GROUP_STAGE' && finished) {
@@ -157,23 +169,26 @@ function computeStandings(blob, matches) {
   const standings = players.map((name, pid) => {
     const codes = rosters[String(pid)] || [];
     const teams = codes.map((code) => {
-      const s = stat[code] || { gW: 0, gD: 0, gL: 0, gPts: 0, rank: -1 };
+      const s = stat[code] || { gW: 0, gD: 0, gL: 0, gPts: 0, gf: 0, ga: 0, rank: -1 };
       const b = bonusFor(s);
       const t = TEAM[code] || { name: code, flag: '' };
       return {
         code, name: t.name, flag: t.flag,
         gW: s.gW, gD: s.gD, gL: s.gL, gPts: s.gPts,
+        gf: s.gf || 0, ga: s.ga || 0, gd: (s.gf || 0) - (s.ga || 0),
         round: b.round, bonus: b.bonus,
         total: s.gPts + b.bonus,
       };
     });
     const groupPts = teams.reduce((a, t) => a + t.gPts, 0);
     const bonus = teams.reduce((a, t) => a + t.bonus, 0);
-    return { player: pid, name, total: groupPts + bonus, groupPts, bonus, teams };
+    // Manager goal differential = sum of every rostered team's GD, whole tournament.
+    const gd = teams.reduce((a, t) => a + t.gd, 0);
+    return { player: pid, name, total: groupPts + bonus, groupPts, bonus, gd, teams };
   });
 
-  // Sort: total desc, then group pts desc, then name.
-  standings.sort((a, b) => b.total - a.total || b.groupPts - a.groupPts || a.name.localeCompare(b.name));
+  // Sort: total desc, then goal differential (tie-break), then group pts, then name.
+  standings.sort((a, b) => b.total - a.total || b.gd - a.gd || b.groupPts - a.groupPts || a.name.localeCompare(b.name));
 
   return { standings, unmatched: [...unmatched], teamStats: stat };
 }
