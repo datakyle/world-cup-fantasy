@@ -1,3 +1,5 @@
+<p align="center"><img src="logo.svg" alt="World Cup 2026 Fantasy logo" width="132" height="132"></p>
+
 # World Cup 2026 Fantasy League
 
 A 6-player fantasy pool: each player drafts 8 of the 48 WC 2026 teams, then scores

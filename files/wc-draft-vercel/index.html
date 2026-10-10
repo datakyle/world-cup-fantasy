@@ -50,6 +50,8 @@
     color:#fff;padding:16px 16px 14px;position:sticky;top:0;z-index:20;
   }
   .htop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .htop .appmark{width:34px;height:34px;flex:none;margin-right:-2px}
+  .htop .brand{margin-right:auto}
   .brand{display:flex;flex-direction:column;line-height:1.1}
   .brand b{font-size:18px;letter-spacing:-.01em}
   .brand span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#9fd3ba;margin-top:3px;display:flex;align-items:center}
@@ -302,7 +304,7 @@ function header(){
   }
   return `<header>
     <div class="htop">
-      <div class="brand"><b>Draft Room</b><span>World Cup 2026 ${syncChip()}</span></div>
+      <img class="appmark" src="/icon.svg" alt="" width="34" height="34"><div class="brand"><b>Draft Room</b><span>World Cup 2026 ${syncChip()}</span></div>
       <button class="me-chip" id="meBtn">You: <b>${meName}</b> ▾</button>
     </div>${clock}
   </header>`;
@@ -392,7 +394,7 @@ function rosterView(){
 function setupView(){
   const s=app.setup, cap=s.names.length*s.picks;
   const over=cap>48, ready=s.names.length>=2 && !over;
-  return `<header><div class="htop"><div class="brand"><b>Draft Room</b><span>World Cup 2026</span></div></div></header>
+  return `<header><div class="htop"><img class="appmark" src="/icon.svg" alt="" width="34" height="34"><div class="brand"><b>Draft Room</b><span>World Cup 2026</span></div></div></header>
   <div class="pad">
     <h2>Set up the draft</h2>
     <p class="sub">Whoever opens this first sets it up — then send the same link to the league and everyone picks on the same board. It updates live for all of you.</p>

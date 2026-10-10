@@ -21,6 +21,7 @@
   @media(min-width:500px){body{padding:22px 0}#phone{height:calc(100dvh - 44px);border-radius:30px}}
   header{background:linear-gradient(160deg,var(--pitch),var(--pitch2));color:#fff;padding:18px 16px 16px;position:sticky;top:0;z-index:20;text-align:center}
   .brand{display:flex;flex-direction:column;align-items:center;gap:7px}
+  .brand .appmark{width:40px;height:40px;display:block}
   .brand .kicker{font-size:9.5px;letter-spacing:.24em;text-transform:uppercase;color:#9fd3ba;font-weight:700}
   .brand b{font-size:22px;font-weight:800;letter-spacing:-.015em;line-height:1}
   .sync{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:20px;margin-top:1px}
@@ -175,6 +176,7 @@
   <header>
     <button id="refresh" class="refresh" aria-label="Refresh now" title="Refresh now">↻</button>
     <div class="brand">
+      <img class="appmark" src="/icon.svg" alt="" width="40" height="40">
       <span class="kicker">FIFA World Cup 2026</span>
       <b>WC 2026 Fantasy</b>
       <span id="sync" class="sync stale"><i class="dot"></i>Loading…</span>
